@@ -1,0 +1,20 @@
+# General
+target/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# VS Code
+.vscode/
+
+# Vim/NeoVim
+*.vim
+.factorypath
