@@ -84,7 +84,6 @@ public class YamlPlayer {
      * @return The UUIDs of all players currently ignored by this player
      */
     public List<UUID> getIgnored() {
-        // I dislike this
         ArrayList<UUID> uuidList = new ArrayList<>();
         this.yamlConfig.getStringList("ignored").forEach(
                 item -> {
@@ -101,7 +100,12 @@ public class YamlPlayer {
      * @param ignoredList The new value of "ignored"
      */
     public void setIgnored(List<UUID> ignoredList) {
-        this.yamlConfig.set("ignored", ignoredList);
+        ArrayList<String> stringList = new ArrayList<>(ignoredList.size());
+        ignoredList.forEach(
+                item -> {
+                    stringList.add(item.toString());
+                });
+        this.yamlConfig.set("ignored", stringList);
     }
 
     /**
