@@ -3,6 +3,8 @@ package net.wandermc.chat.config;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -21,7 +23,8 @@ public class YamlPlayer {
     }
 
     /**
-     * Sets the static variable usersFolder, must be run before any instances of this class are made.
+     * Sets the static variable usersFolder, must be run before any instances of
+     * this class are made.
      * 
      * @param folder The "users" folder in this plugin's dataFolder
      */
@@ -30,18 +33,24 @@ public class YamlPlayer {
     }
 
     /**
-     * Locates and returns the file for user with UUID `this.uuid`, creating the file if it doesn't exist.
+     * Locates and returns the file for user with UUID `this.uuid`, creating the
+     * file if it doesn't exist.
+     * 
      * @param usersFolder The /users directory in this plugin's dataFolder
      */
     public File getPlayerFile(File usersFolder) {
-        File file = new File(usersFolder, this.uuid+".yml");
-        try {file.createNewFile();} 
-        catch (IOException e) {}
+        File file = new File(usersFolder, this.uuid + ".yml");
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+        }
         return file;
     }
 
     /**
-     * Attempts to save the yaml data currently held by this object to the player's file.
+     * Attempts to save the yaml data currently held by this object to the player's
+     * file.
+     * 
      * @return Whether saving was successful
      */
     public boolean save() {
@@ -54,47 +63,70 @@ public class YamlPlayer {
     }
 
     /**
-     * Gets the boolean at `path`.
-     * @return The value of `path` or null if it doesn't exist
+     * Gets this player's (last stored) username.
+     * 
+     * @return The username stored in the file represented by this instance
      */
-    public boolean getBoolean(String path) {
-        return this.yamlConfig.getBoolean(path);
+    public String getUsername() {
+        return this.yamlConfig.getString("username");
     }
 
     /**
-     * Gets the double at `path`.
-     * @return The value of `path` or null if it doesn't exist
+     * Sets "username"
      */
-    public double getDouble(String path) {
-        return this.yamlConfig.getDouble(path);
+    public void setUsername(String path) {
+        this.yamlConfig.set("username", path);
     }
 
     /**
-     * Gets the int at `path`.
-     * @return The value of `path` or null if it doesn't exist
+     * Gets the list of players "ignored" by this player.
+     * 
+     * @return The UUIDs of all players currently ignored by this player
      */
-    public int getInt(String path) {
-        return this.yamlConfig.getInt(path);
+    public List<UUID> getIgnored() {
+        ArrayList<UUID> uuidList = new ArrayList<>();
+        this.yamlConfig.getStringList("ignored").forEach(
+                item -> {
+                    uuidList.add(UUID.fromString(item));
+                });
+        return uuidList;
     }
 
     /**
-     * Gets the String at `path`.
-     * @return The value of `path` or null if it doesn't exist
-     */
-    public String getString(String path) {
-        return this.yamlConfig.getString(path);
-    }
-
-    /**
-     * Sets `path` to `value`.
+     * Sets the UUIDs of the player's currently ignored by this player.
      *
-     * Note that this does **not** save stored data to file, this must be done manually with `save()`
-     *
-     * @param path The path at which to store `value`
-     * @param value The value to store, can be of any type
+     * Note that this overwrites the previous value, for appending `appendIgnored` can be used.
+     * 
+     * @param ignoredList The new value of "ignored"
      */
-    public void set(String path, Object value) {
-        this.yamlConfig.set(path, value);
+    public void setIgnored(List<UUID> ignoredList) {
+        ArrayList<String> stringList = new ArrayList<>(ignoredList.size());
+        ignoredList.forEach(
+                item -> {
+                    stringList.add(item.toString());
+                });
+        this.yamlConfig.set("ignored", stringList);
+    }
+
+    /**
+     * Appends a single uuid to "ignored".
+     *
+     * @param uuid UUID to append
+     */
+    public void appendIgnored(UUID uuid) {
+        ArrayList<UUID> ignored = (ArrayList<UUID>)this.getIgnored();
+        ignored.add(uuid);
+        this.setIgnored(ignored);
+    }
+
+    /**
+     * Removes a single uuid from "ignored".
+     *
+     * @param uuid UUID to remove
+     */
+    public void removeIgnored(UUID uuid) {
+        ArrayList<UUID> ignored = (ArrayList<UUID>)this.getIgnored();
+        ignored.remove(uuid);
+        this.setIgnored(ignored);
     }
 }
-
