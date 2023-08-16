@@ -5,3 +5,15 @@ author: "animal"
 prefix: "WChat"
 main: "net.wandermc.chat.Chat"
 api-version: "1.20"
+
+commands:
+  ignore:
+    description: "Ignore a currently-online player, stopping you from seeing any of their messages."
+    usage: "/ignore {username}"
+    permission: "wandermc.chat.ignore"
+
+
+permissions:
+  wandermc.chat.ignore:
+    description: "Permission for /ignore"
+    default: true
