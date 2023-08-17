@@ -11,9 +11,16 @@ commands:
     description: "Ignore a currently-online player, stopping you from seeing any of their messages."
     usage: "/ignore {username}"
     permission: "wandermc.chat.ignore"
+  unignore:
+    description: "Unignore a previously-ignored player"
+    usage: "/unignore {username}"
+    permission: "wandermc.chat.unignore"
 
 
 permissions:
   wandermc.chat.ignore:
     description: "Permission for /ignore"
+    default: true
+  wandermc.chat.unignore:
+    description: "Permission for /unignore"
     default: true

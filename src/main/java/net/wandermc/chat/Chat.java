@@ -1,6 +1,6 @@
 package net.wandermc.chat;
 
-import net.wandermc.chat.commands.IgnoreCommand;
+import net.wandermc.chat.commands.*;
 import net.wandermc.chat.config.YamlPlayer;
 import net.wandermc.chat.listeners.ChatListener;
 
@@ -15,6 +15,7 @@ public class Chat extends JavaPlugin {
         setupUsersFolder();
 
         getCommand("ignore").setExecutor(new IgnoreCommand(this.getServer(), this.getLogger()));
+        getCommand("unignore").setExecutor(new UnignoreCommand(this.getServer(), this.getLogger()));
         getServer().getPluginManager().registerEvents(new ChatListener(), this);
     }
 
