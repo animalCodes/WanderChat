@@ -46,6 +46,7 @@ public class IgnoreCommand implements CommandExecutor {
             return true;
         }
 
+        // TODO check if player is already ignored
         playerConfig.appendIgnored(ignoredPlayer.getUniqueId());
 
         logger.info(playerConfig.getIgnored().toString());

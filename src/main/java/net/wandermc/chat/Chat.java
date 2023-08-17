@@ -2,11 +2,11 @@ package net.wandermc.chat;
 
 import net.wandermc.chat.commands.IgnoreCommand;
 import net.wandermc.chat.config.YamlPlayer;
+import net.wandermc.chat.listeners.ChatListener;
 
 import java.io.File;
 
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.Server;
 
 public class Chat extends JavaPlugin {
     private File usersFolder;
@@ -15,6 +15,7 @@ public class Chat extends JavaPlugin {
         setupUsersFolder();
 
         getCommand("ignore").setExecutor(new IgnoreCommand(this.getServer(), this.getLogger()));
+        getServer().getPluginManager().registerEvents(new ChatListener(), this);
     }
 
     public void onDisable() {}
