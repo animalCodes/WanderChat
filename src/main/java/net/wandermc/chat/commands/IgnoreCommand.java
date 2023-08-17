@@ -2,7 +2,6 @@ package net.wandermc.chat.commands;
 
 import net.wandermc.chat.config.YamlPlayer;
 
-import java.util.UUID;
 import java.util.logging.Logger;
 
 import net.kyori.adventure.text.Component;
@@ -45,17 +44,20 @@ public class IgnoreCommand implements CommandExecutor {
             sender.sendMessage(Component.text("You can't ignore yourself."));
             return true;
         }
+        if (playerConfig.isIgnoring(ignoredPlayer.getUniqueId())) {
+            sender.sendMessage(Component.text("Player \""+args[0]+"\" is already ignored, to un-ignore someone use /unignore."));
+            return true;
+        }
 
-        // TODO check if player is already ignored
         playerConfig.appendIgnored(ignoredPlayer.getUniqueId());
-
-        logger.info(playerConfig.getIgnored().toString());
 
         if (!playerConfig.save()) {
             // TODO in this case store in memory
             logger.warning("Was unable to save data for player with username \""+player.name()+"\" and UUID \""+player.getUniqueId()+"\".");
             sender.sendMessage(Component.text("An IO error occurred, please notify an admin."));
         }
+
+        sender.sendMessage(Component.text("You will no longer see messages sent by player \""+args[0]+"\", to undo use /unignore."));
 
         return true;
     }
