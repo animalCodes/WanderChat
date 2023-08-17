@@ -129,4 +129,13 @@ public class YamlPlayer {
         ignored.remove(uuid);
         this.setIgnored(ignored);
     }
+
+    /**
+     * Checks if `uuid` is ignored by this player.
+     *
+     * @param uuid UUID to check
+     */
+    public boolean isIgnoring(UUID uuid) {
+        return this.getIgnored().contains(uuid);
+    }
 }
