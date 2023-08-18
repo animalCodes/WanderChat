@@ -8,7 +8,7 @@ api-version: "1.20"
 
 commands:
   ignore:
-    description: "Ignore a currently-online player, stopping you from seeing any of their messages."
+    description: "Ignore a currently-online player. Or list currently ignored players when a username isn't specified."
     usage: "/ignore {username}"
     permission: "wandermc.chat.ignore"
   unignore:
