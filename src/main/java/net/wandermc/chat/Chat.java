@@ -1,8 +1,8 @@
 package net.wandermc.chat;
 
 import net.wandermc.chat.commands.*;
-import net.wandermc.chat.config.YamlPlayer;
-import net.wandermc.chat.listeners.ChatListener;
+import net.wandermc.chat.config.*;
+import net.wandermc.chat.listeners.*;
 
 import java.io.File;
 
@@ -10,13 +10,18 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class Chat extends JavaPlugin {
     private File usersFolder;
+    private PlayerManager playerManager;
 
     public void onEnable() {
         setupUsersFolder();
 
+        this.playerManager = new PlayerManager();
+
         getCommand("ignore").setExecutor(new IgnoreCommand(this.getServer(), this.getLogger()));
         getCommand("unignore").setExecutor(new UnignoreCommand(this.getServer(), this.getLogger()));
+
         getServer().getPluginManager().registerEvents(new ChatListener(), this);
+        getServer().getPluginManager().registerEvents(new ConnectionListeners(this.playerManager), this);
     }
 
     public void onDisable() {}
