@@ -3,12 +3,12 @@ package net.wandermc.chat.config;
 import java.util.HashMap;
 import java.util.UUID;
 
-import net.wandermc.chat.config.YamlPlayer;
-
 public class PlayerManager {
     private HashMap<UUID, YamlPlayer> players;
 
-    public PlayerManager() {}
+    public PlayerManager() {
+        this.players = new HashMap<>();
+    }
 
     /**
      * Loads a YamlPlayer object for player `uuid`, also used for updating an entry.
