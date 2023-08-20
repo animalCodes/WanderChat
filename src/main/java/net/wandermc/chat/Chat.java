@@ -17,10 +17,10 @@ public class Chat extends JavaPlugin {
 
         this.playerManager = new PlayerManager();
 
-        getCommand("ignore").setExecutor(new IgnoreCommand(this.getServer(), this.getLogger()));
-        getCommand("unignore").setExecutor(new UnignoreCommand(this.getServer(), this.getLogger()));
+        getCommand("ignore").setExecutor(new IgnoreCommand(this.getServer(), this.getLogger(), this.playerManager));
+        getCommand("unignore").setExecutor(new UnignoreCommand(this.getServer(), this.getLogger(), this.playerManager));
 
-        getServer().getPluginManager().registerEvents(new ChatListener(), this);
+        getServer().getPluginManager().registerEvents(new ChatListener(this.playerManager), this);
         getServer().getPluginManager().registerEvents(new ConnectionListeners(this.playerManager), this);
     }
 

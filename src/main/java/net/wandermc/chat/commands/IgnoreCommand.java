@@ -1,5 +1,6 @@
 package net.wandermc.chat.commands;
 
+import net.wandermc.chat.config.PlayerManager;
 import net.wandermc.chat.config.YamlPlayer;
 
 import java.util.ArrayList;
@@ -17,10 +18,12 @@ import org.bukkit.entity.Player;
 public class IgnoreCommand implements CommandExecutor {
     private Server server;
     private Logger logger;
+    private PlayerManager playerManager;
 
-    public IgnoreCommand(Server server, Logger logger) {
+    public IgnoreCommand(Server server, Logger logger, PlayerManager playerManager) {
         this.server = server;
         this.logger = logger;
+        this.playerManager = playerManager;
     }
 
     @Override
@@ -31,7 +34,7 @@ public class IgnoreCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        YamlPlayer playerConfig = new YamlPlayer(player.getUniqueId());
+        YamlPlayer playerConfig = this.playerManager.getYamlPlayer(player.getUniqueId(), true);
 
         // If run without arguments, list currently ignored players
         if (args.length < 1) {
@@ -59,9 +62,9 @@ public class IgnoreCommand implements CommandExecutor {
             sender.sendMessage(Component.text("You can't ignore yourself."));
             return true;
         }
+
         if (playerConfig.isIgnoring(ignoredPlayer.getUniqueId())) {
-            sender.sendMessage(Component
-                    .text("Player \"" + args[0] + "\" is already ignored, to un-ignore someone use /unignore."));
+            sender.sendMessage(Component.text("Player \"" + args[0] + "\" is already ignored, to un-ignore someone use /unignore."));
             return true;
         }
 
@@ -69,13 +72,12 @@ public class IgnoreCommand implements CommandExecutor {
 
         if (!playerConfig.save()) {
             // TODO in this case store in memory
-            logger.warning("Was unable to save data for player with username \"" + player.name() + "\" and UUID \""
-                    + player.getUniqueId() + "\".");
+            logger.warning("Was unable to save data for player with username \"" + player.getName() + "\" and UUID \"" + player.getUniqueId() + "\".");
             sender.sendMessage(Component.text("An IO error occurred, please notify an admin."));
+            return true;
         }
 
-        sender.sendMessage(Component
-                .text("You will no longer see messages sent by player \"" + args[0] + "\", to undo use /unignore."));
+        sender.sendMessage(Component.text("You will no longer see messages sent by player \"" + args[0] + "\", to undo use /unignore."));
 
         return true;
     }
