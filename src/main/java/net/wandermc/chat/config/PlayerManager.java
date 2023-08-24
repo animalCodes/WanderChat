@@ -1,6 +1,7 @@
 package net.wandermc.chat.config;
 
 import java.util.HashMap;
+import java.util.Collection;
 import java.util.UUID;
 
 public class PlayerManager {
@@ -43,5 +44,14 @@ public class PlayerManager {
         if (this.players.get(uuid) == null && tryLoad)
             this.loadYamlPlayer(uuid);
         return this.players.get(uuid);
+    }
+
+    /**
+     * Gets all currently stored YamlPlayers.
+     *
+     * @return A view of all stored YamlPlayers
+     */
+    public Collection<YamlPlayer> getAllYamlPlayers() {
+        return this.players.values();
     }
 }

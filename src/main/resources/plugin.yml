@@ -15,6 +15,11 @@ commands:
     description: "Unignore a previously-ignored player"
     usage: "/unignore {username}"
     permission: "wandermc.chat.unignore"
+  wca:
+    description: "Administration super-command for WanderChat"
+    usage: "/wca {subcommand}"
+    permission: "wandermc.chat.wca"
+    aliases: [wcadmin, wchatadmin, wchata]
 
 
 permissions:
@@ -24,3 +29,6 @@ permissions:
   wandermc.chat.unignore:
     description: "Permission for /unignore"
     default: true
+  wandermc.chat.wca:
+    description: "Permission for /wca"
+    default: op

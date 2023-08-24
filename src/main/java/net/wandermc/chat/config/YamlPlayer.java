@@ -33,6 +33,15 @@ public class YamlPlayer {
     }
 
     /**
+     * Reloads the file this instance is shadowing.
+     *
+     * Must be run after a file is manually modified, otherwise the changes will not be recorded.
+     */
+    public void reloadFile() {
+        this.yamlConfig = YamlConfiguration.loadConfiguration(this.playerFile);
+    }
+
+    /**
      * Locates and returns the file for user with UUID `this.uuid`, creating the
      * file if it doesn't exist.
      * 

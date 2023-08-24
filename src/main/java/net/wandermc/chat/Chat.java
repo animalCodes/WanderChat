@@ -19,6 +19,7 @@ public class Chat extends JavaPlugin {
 
         getCommand("ignore").setExecutor(new IgnoreCommand(this.getServer(), this.getLogger(), this.playerManager));
         getCommand("unignore").setExecutor(new UnignoreCommand(this.getServer(), this.getLogger(), this.playerManager));
+        getCommand("wca").setExecutor(new WcaCommand(this.playerManager));
 
         getServer().getPluginManager().registerEvents(new ChatListener(this.playerManager), this);
         getServer().getPluginManager().registerEvents(new ConnectionListeners(this.playerManager), this);
