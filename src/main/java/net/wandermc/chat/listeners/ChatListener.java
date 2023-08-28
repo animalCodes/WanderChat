@@ -13,6 +13,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
+import net.wandermc.chat.chat.ChatMessage;
 import net.wandermc.chat.config.PlayerManager;
 
 import org.bukkit.Server;
@@ -22,43 +23,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 public class ChatListener implements Listener {
-    // Should match all valid username characters
-    // Actual username stored in "username" group
-    private static final Pattern taggedUsernameRegex = Pattern.compile("@(?<username>\\w+)\\W?");
-
     private Server server;
     private PlayerManager playerManager;
 
     public ChatListener(Server server, PlayerManager playerManager) {
         this.server = server;
         this.playerManager = playerManager;
-    }
-
-    /**
-     * Returns a set of all players tagged in `chatMessage`.
-     *
-     * @param chatMessage Message to scan through
-     * @return A set of players whose usernames were tagged in the message
-     */
-    private HashSet<Player> getTaggedPlayers(Component chatMessage) {
-        ArrayList<String> usernames = new ArrayList<>();
-        HashSet<Player> taggedPlayers = new HashSet<>();
-
-        Matcher usernameMatcher = taggedUsernameRegex.matcher(
-                PlainTextComponentSerializer.plainText().serialize(chatMessage));
-
-        while (usernameMatcher.find()) {
-            usernames.add(usernameMatcher.group("username"));
-        }
-
-        usernames.forEach(username -> {
-            // TODO make configurable whether to use getPlayerExact or getPlayer
-            Player taggedPlayer = this.server.getPlayerExact(username);
-            if (taggedPlayer != null)
-                taggedPlayers.add(taggedPlayer);
-        });
-
-        return taggedPlayers;
     }
 
     /**
@@ -91,9 +61,10 @@ public class ChatListener implements Listener {
     @EventHandler
     public void onMessage(AsyncChatEvent event) {
         Player sender = event.getPlayer();
+        ChatMessage chatMessage = new ChatMessage(event.message());
 
         // Tag any tagged players provided sender is allowed to tag them.
-        for (Player player : getTaggedPlayers(event.message())) {
+        for (Player player : chatMessage.getTaggedPlayers(this.server)) {
             if (canTag(sender, player))
                 tagPlayer(player, sender.displayName());
         }
@@ -112,5 +83,8 @@ public class ChatListener implements Listener {
             }
             return false;
         });
+
+        // ChatMessage has likely made some changes to the original message, so update the message to be sent.
+        event.message(chatMessage.getMessage());
     }
 }
