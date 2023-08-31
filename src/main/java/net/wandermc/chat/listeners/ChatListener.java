@@ -1,17 +1,15 @@
 package net.wandermc.chat.listeners;
 
+import net.wandermc.chat.chat.Formatters;
+
 import io.papermc.paper.event.player.AsyncChatEvent;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.text.TextComponent;
 
 import net.wandermc.chat.chat.ChatMessage;
 import net.wandermc.chat.config.PlayerManager;
@@ -61,7 +59,9 @@ public class ChatListener implements Listener {
     @EventHandler
     public void onMessage(AsyncChatEvent event) {
         Player sender = event.getPlayer();
-        ChatMessage chatMessage = new ChatMessage(event.message());
+        ChatMessage chatMessage = new ChatMessage((TextComponent)event.message());
+        
+        chatMessage.applyFormatter(Formatters.makeLinksClickable);
 
         // Tag any tagged players provided sender is allowed to tag them.
         for (Player player : chatMessage.getTaggedPlayers(this.server)) {
@@ -84,7 +84,6 @@ public class ChatListener implements Listener {
             return false;
         });
 
-        // ChatMessage has likely made some changes to the original message, so update the message to be sent.
         event.message(chatMessage.getMessage());
     }
 }
