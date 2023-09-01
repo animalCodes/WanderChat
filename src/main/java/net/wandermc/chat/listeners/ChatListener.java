@@ -61,6 +61,11 @@ public class ChatListener implements Listener {
         Player sender = event.getPlayer();
         ChatMessage chatMessage = new ChatMessage((TextComponent)event.message());
         
+        // Note: this will not be able to detect **bold text** nested inside *emphasised text*.
+        // However, the reverse will work.
+        // TODO try to find a solution to above problem
+        chatMessage.applyFormatter(Formatters.makeStrongTextBold);
+        chatMessage.applyFormatter(Formatters.makeEmphasisedTextItalic);
         chatMessage.applyFormatter(Formatters.makeLinksClickable);
 
         // Tag any tagged players provided sender is allowed to tag them.
