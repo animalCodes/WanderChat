@@ -1,0 +1,5 @@
+# The delay in minutes between tips being announced
+tipDelay: 15
+
+# All tips to be announced
+tips: []
