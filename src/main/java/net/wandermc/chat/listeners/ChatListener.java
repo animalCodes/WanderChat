@@ -20,7 +20,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
+// TODO remove
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextDecoration;
+
 public class ChatListener implements Listener {
+    private static final Style boldStyle = Style.style().decorate(TextDecoration.BOLD).build();
+    private static final Style italicStyle = Style.style().decorate(TextDecoration.ITALIC).build();
+
     private Server server;
     private PlayerManager playerManager;
 
@@ -60,12 +67,10 @@ public class ChatListener implements Listener {
     public void onMessage(AsyncChatEvent event) {
         Player sender = event.getPlayer();
         ChatMessage chatMessage = new ChatMessage((TextComponent)event.message());
+
+        chatMessage.styleMarkedText(boldStyle, "**");
+        chatMessage.styleMarkedText(italicStyle, "*");
         
-        // Note: this will not be able to detect **bold text** nested inside *emphasised text*.
-        // However, the reverse will work.
-        // TODO try to find a solution to above problem
-        chatMessage.applyFormatter(Formatters.makeStrongTextBold);
-        chatMessage.applyFormatter(Formatters.makeEmphasisedTextItalic);
         chatMessage.applyFormatter(Formatters.makeLinksClickable);
 
         // Tag any tagged players provided sender is allowed to tag them.
