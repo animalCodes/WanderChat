@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,16 +11,24 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentIteratorFlag;
 import net.kyori.adventure.text.ComponentIteratorType;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
 public class ChatMessage {
+    private static final Style underlineStyle = Style.style().decorate(TextDecoration.UNDERLINED).build();
     // Should match all valid username characters
     // Actual username stored in "username" group
     private static final Pattern taggedUsernameRegex = Pattern.compile("@(?<username>\\w+)\\W?");
+    // Should match *most* URLs + leading text if it exists
+    // Full url stored in "url" group, leading text is similarly stored in "leading"
+    // group.
+    private static final Pattern urlRegex = Pattern.compile(
+            "(?<leading>.*?)(?<url>(?:https?://)?(?:[\\w-]+\\.)+(?:[\\w-]+)(?:/?[\\w-.~!?$&'()*+,;=:@%]*/?)*(?:\\.\\w+)?(?:#[\\w-.~!?$&'()*+,;=:@%]*)?)");
 
     private TextComponent originalMessage;
     private TextComponent message;
@@ -32,32 +39,53 @@ public class ChatMessage {
     }
 
     /**
-     * Applies given formatting function to every component comprising this message.
+     * Attempts to locate every url in this message and make them clickable.
      *
-     * A "formatting function" should take a TextComponent as input, modify it in
-     * some way (it doesn't actually need to change the "format" of the component)
-     * and return the modified version.
-     *
-     * @param function The function to apply
+     * Due to this operating on single components and thus being unable to detect urls that span multiple components, this should be run before any calls to `styleMarkedText()`.
      */
-    public void applyFormatter(Function<TextComponent, TextComponent> function) {
-        TextComponent.Builder newMessagebuilder = Component.text();
+    public void detectUrls() {
+        TextComponent.Builder newMessage = Component.text();
         this.message.iterator(ComponentIteratorType.DEPTH_FIRST, EnumSet.noneOf(ComponentIteratorFlag.class))
                 .forEachRemaining(component -> {
                     if (component instanceof TextComponent textComponent) {
-                        newMessagebuilder.append(function.apply(textComponent));
+                        Matcher urlMatcher = urlRegex.matcher(textComponent.content());
+                        int endIndex = 0;
+                        // For every match
+                        while (urlMatcher.find()) {
+                            // Append text before matching URL (this may be an empty string)
+                            newMessage.append(Component.text(urlMatcher.group("leading"))
+                                    .mergeStyle(component)); // Retain styling
+
+                            // Append found url, make clickable.
+                            String url = urlMatcher.group("url");
+                            newMessage.append(Component.text(url)
+                                    .style(underlineStyle) // Add underline as a marker that the link has been made clickable
+                                    .mergeStyle(textComponent)
+                                    // Minecraft only considers links valid if they have a protocol specified, so
+                                    // add one if needed.
+                                    .clickEvent(ClickEvent.openUrl(!url.startsWith("http") ? "https://" + url : url)));
+
+                            endIndex = urlMatcher.end();
+                        }
+
+                        // Append any trailing text. If no matches were found, this'll append the entire
+                        // content of `textComponent`.
+                        newMessage.append(Component
+                                .text(textComponent.content().substring(endIndex, textComponent.content().length()))
+                                .mergeStyle(textComponent));
                     }
                 });
-        this.message = (TextComponent) newMessagebuilder.build().compact();
+        this.message = (TextComponent) newMessage.build().compact();
     }
 
     /**
-     * Locates text surrounded by `mark` on either side, extracts and applies `style` to it.
+     * Locates text surrounded by `mark` on either side, extracts and applies
+     * `style` to it.
      * 
      * Any previous style will be preserved.
      *
      * @param style The style to apply.
-     * @param mark The substrings indicating text to be styled.
+     * @param mark  The substrings indicating text to be styled.
      */
     public void styleMarkedText(Style style, String mark) {
         TextComponent.Builder newMessage = Component.text();
@@ -78,16 +106,17 @@ public class ChatMessage {
                 // Find next mark after startIndex
                 endIndex = content.indexOf(mark, startIndex);
                 // Append all text before mark, retain styling.
-                newMessage.append(Component.text(content.substring(startIndex, (endIndex == -1) ? content.length() : endIndex))
-                    .mergeStyle(component));
+                newMessage.append(
+                        Component.text(content.substring(startIndex, (endIndex == -1) ? content.length() : endIndex))
+                                .mergeStyle(component));
                 // If a mark was found, locate MARKED text.
                 if (endIndex != -1) {
-                    startIndex = endIndex+mark.length(); // Step over found mark
+                    startIndex = endIndex + mark.length(); // Step over found mark
                     endIndex = content.indexOf(mark, startIndex); // Find next mark if it exists
                     if (endIndex == -1) { // No marks after first
                         // Append trailing text
                         buffer.append(Component.text(content.substring(startIndex, content.length()))
-                            .mergeStyle(component));
+                                .mergeStyle(component));
                         // Try to find mark in subsequent components
                         boolean found = false;
                         while (iterator.hasNext()) {
@@ -97,7 +126,7 @@ public class ChatMessage {
                             if (endIndex != -1) {
                                 found = true;
                                 buffer.append(Component.text(content.substring(0, endIndex))
-                                    .mergeStyle(component));
+                                        .mergeStyle(component));
                                 break;
                             } else {
                                 buffer.append(component);
@@ -105,7 +134,8 @@ public class ChatMessage {
                         }
                         // If another mark was found, style all inbetween components
                         if (found) {
-                            // This is ugly and overcomplicated but also the only way I could figure out to preserve the previous style of the component.
+                            // This is ugly and overcomplicated but also the only way I could figure out to
+                            // preserve the previous style of the component.
                             for (Component child : buffer.children()) {
                                 newMessage.append(child.style(style).mergeStyle(child));
                             }
@@ -116,16 +146,17 @@ public class ChatMessage {
                         buffer = Component.text();
                     } else { // Next mark was found
                         // Deal with case where two marks are placed directly next to each other
-                        // This won't help if the marks are at the end+start of adjacent components, but it's enough for now.
+                        // This won't help if the marks are at the end+start of adjacent components, but
+                        // it's enough for now.
                         if (startIndex == endIndex)
-                            newMessage.append(Component.text(mark+mark)
-                                .mergeStyle(component));
+                            newMessage.append(Component.text(mark + mark)
+                                    .mergeStyle(component));
                         else
                             newMessage.append(Component.text(content.substring(startIndex, endIndex))
-                                .style(style)
-                                .mergeStyle(component));
+                                    .style(style)
+                                    .mergeStyle(component));
                     }
-                    startIndex = (endIndex+mark.length() > content.length()) ? content.length() : endIndex+mark.length(); // Again step over mark in preparation for next loop
+                    startIndex = (endIndex + mark.length() > content.length()) ? content.length() : endIndex + mark.length(); // Again step over mark in preparation for next loop
                 }
             } while (endIndex != -1);
             startIndex = 0;

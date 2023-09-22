@@ -1,15 +1,15 @@
 package net.wandermc.chat.listeners;
 
-import net.wandermc.chat.chat.Formatters;
-
 import io.papermc.paper.event.player.AsyncChatEvent;
 
 import java.util.Set;
 
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import net.wandermc.chat.chat.ChatMessage;
 import net.wandermc.chat.config.PlayerManager;
@@ -19,10 +19,6 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-
-// TODO remove
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextDecoration;
 
 public class ChatListener implements Listener {
     private static final Style boldStyle = Style.style().decorate(TextDecoration.BOLD).build();
@@ -68,11 +64,10 @@ public class ChatListener implements Listener {
         Player sender = event.getPlayer();
         ChatMessage chatMessage = new ChatMessage((TextComponent)event.message());
 
+        chatMessage.detectUrls();
         chatMessage.styleMarkedText(boldStyle, "**");
         chatMessage.styleMarkedText(italicStyle, "*");
         
-        chatMessage.applyFormatter(Formatters.makeLinksClickable);
-
         // Tag any tagged players provided sender is allowed to tag them.
         for (Player player : chatMessage.getTaggedPlayers(this.server)) {
             if (canTag(sender, player))
