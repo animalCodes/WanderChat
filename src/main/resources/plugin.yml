@@ -20,7 +20,10 @@ commands:
     usage: "/wca {subcommand}"
     permission: "wandermc.chat.wca"
     aliases: [wcadmin, wchatadmin, wchata]
-
+  announce:
+    description: "Announcement super-command for WanderChat"
+    usage: "/announce {subcommand}"
+    permission: "wandermc.chat.announce"
 
 permissions:
   wandermc.chat.ignore:
@@ -31,4 +34,7 @@ permissions:
     default: true
   wandermc.chat.wca:
     description: "Permission for /wca"
+    default: op
+  wandermc.chat.announce:
+    description: "Permission for /announce"
     default: op

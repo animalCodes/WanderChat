@@ -27,11 +27,12 @@ public class Chat extends JavaPlugin {
         Server server = this.getServer();
 
         this.playerManager = new PlayerManager();
-        this.announcer = new Announcer(server);
+        this.announcer = new Announcer(server, this);
 
         getCommand("ignore").setExecutor(new IgnoreCommand(server, this.getLogger(), this.playerManager));
         getCommand("unignore").setExecutor(new UnignoreCommand(server, this.getLogger(), this.playerManager));
         getCommand("wca").setExecutor(new WcaCommand(this.playerManager));
+        getCommand("announce").setExecutor(new AnnounceCommand(this.announcer));
 
         getServer().getPluginManager().registerEvents(new ChatListener(server, this.playerManager), this);
         getServer().getPluginManager().registerEvents(new ConnectionListeners(this.playerManager), this);
