@@ -21,6 +21,7 @@ public class AnnounceCommand implements CommandExecutor {
     // All subcommands with descriptions.
     private String[] subCommandDescs = {
             "in {duration} {message} - Announce {message} after {duration}, run without specifying a duration or message to see duration format.",
+            "cancel - Cancels the last scheduled announcement.",
             "help - List valid subcommands."
     };
 
@@ -40,6 +41,10 @@ public class AnnounceCommand implements CommandExecutor {
             case "in": {
                 if (!announceIn(args, sender))
                     sender.sendMessage(Component.text("Usage: "+this.subCommandDescs[0]));
+                break;
+            }
+            case "cancel": {
+                announceCancel(sender);
                 break;
             }
             // List all subcommands with descriptions.
@@ -66,9 +71,9 @@ public class AnnounceCommand implements CommandExecutor {
         // If no extra arguments are given, print duration format.
         if (args.length < 2) {
             sender.sendMessage(Component.text("Duration format: [{n}h][{n}m][{n}s] where"));
-            sender.sendMessage(Component.text("{n} Represents any whole number, this can be 0, but shouldn't be."));
-            sender.sendMessage(Component.text("[] Indicates optionality: each number-pair is optional, but at least one must be specified."));
-            sender.sendMessage(Component.text("h, m and s stand for \"Hours\", \"Minutes\" and \"Seconds\" respectively, and are case-insensitive."));
+            sender.sendMessage(Component.text(" {n} Represents any whole number, this can be 0, but shouldn't be."));
+            sender.sendMessage(Component.text(" [] Indicates optionality: each number-pair is optional, but at least one must be specified."));
+            sender.sendMessage(Component.text(" h, m and s stand for \"Hours\", \"Minutes\" and \"Seconds\" respectively, and are case-insensitive."));
             return true;
         }
         if (args.length < 3) {
@@ -95,9 +100,26 @@ public class AnnounceCommand implements CommandExecutor {
             String message = builder.toString();
             
             sender.sendMessage(Component.text(String.format("Announcing \"%s\" in %d hours, %d minutes and %d seconds. (%d ticks)", message, hours, minutes, seconds, ticks)));
+            sender.sendMessage(Component.text("Use /announce cancel to undo."));
 
             this.announcer.announceLater(Component.text("[Announcement] ").decorate(TextDecoration.BOLD), Component.text(message), ticks);
         }
+        return true;
+    }
+
+    /**
+     * Handle "cancel" subcommand.
+     *
+     * @param sender The caller of the command
+     * @return Whether an announcement was cancelled (there might not be any scheduled.)
+     */
+    private boolean announceCancel(CommandSender sender) {
+        Announcer.AnnouncementTask task = this.announcer.cancelAnnouncement();
+        if (task == null) {
+            sender.sendMessage(Component.text("There isn't any pending announcements to cancel."));
+            return false;
+        }
+        sender.sendMessage(Component.text("Announcement \"").append(task.getMessage()).append(Component.text("\" cancelled.")));
         return true;
     }
 }

@@ -1,5 +1,8 @@
 package net.wandermc.chat.chat;
 
+import java.util.Stack;
+import java.util.EmptyStackException;
+
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.Component;
@@ -13,12 +16,15 @@ public class Announcer {
             .color(NamedTextColor.WHITE)
             .decorate().build();
 
+    private Stack<AnnouncementTask> tasks;
+
     private Server server;
     private JavaPlugin plugin;
 
     public Announcer(Server server, JavaPlugin plugin) {
         this.server = server;
         this.plugin = plugin;
+        this.tasks = new Stack<AnnouncementTask>();
     }
 
     /**
@@ -42,9 +48,30 @@ public class Announcer {
     public void announceLater(Component prefix, Component message, long delay) {
         AnnouncementTask task = new AnnouncementTask(prefix, message);
         task.runTaskLater(this.plugin, delay);
+        this.tasks.push(task);
     }
 
-    private class AnnouncementTask extends BukkitRunnable {
+    /**
+     * Removes `task` from task stack.
+     */
+    private void removeTask(AnnouncementTask task) {
+        this.tasks.remove(task);
+    }
+
+    /**
+     * Cancels last scheduled announcement.
+     * @return The cancelled announcement, or null if there was no scheduled announcements.
+     */
+    public AnnouncementTask cancelAnnouncement() {
+        AnnouncementTask task = null;
+        try {
+            task = this.tasks.pop();
+            task.cancel();
+        } catch (EmptyStackException e) {}
+        return task;
+    }
+
+    public class AnnouncementTask extends BukkitRunnable {
         private Component prefix;
         private Component message;
 
@@ -55,6 +82,15 @@ public class Announcer {
 
         public void run() {
             announce(prefix, message);
+            removeTask(this);
+        }
+
+        public Component getPrefix() {
+            return this.prefix;
+        }
+
+        public Component getMessage() {
+            return this.message;
         }
     }
 }
