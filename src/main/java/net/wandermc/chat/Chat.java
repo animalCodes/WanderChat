@@ -17,7 +17,6 @@
 package net.wandermc.chat;
 
 import net.wandermc.chat.chat.Announcer;
-import net.wandermc.chat.chat.TipScheduler;
 import net.wandermc.chat.commands.*;
 import net.wandermc.chat.config.*;
 import net.wandermc.chat.listeners.*;
@@ -34,8 +33,6 @@ public class Chat extends JavaPlugin {
     private PlayerManager playerManager;
     private Announcer announcer;
 
-    private TipScheduler tipScheduler;
-
     public void onEnable() {
         setupUsersFolder();
 
@@ -51,16 +48,15 @@ public class Chat extends JavaPlugin {
         getCommand("announce").setExecutor(new AnnounceCommand(this.announcer));
 
         getServer().getPluginManager().registerEvents(new ChatListener(server, this.playerManager), this);
-        getServer().getPluginManager().registerEvents(new ConnectionListeners(this.playerManager), this);
+        getServer().getPluginManager().registerEvents(new ConnectionListeners(this.announcer, this.playerManager), this);
 
         List<String> tips = getTips();
         if (tips.isEmpty()) {
             this.getLogger().warning("No tips in config.yml, so none will be announced.");
         } else {
-            this.tipScheduler = new TipScheduler(this.announcer, tips);
             // 20 ticks in a second * 60 seconds in a minute * x minutes
-            this.tipScheduler.runTaskTimer(this, 20*60*5,
-                    20 * 60 * this.getConfig().getInt("tipDelay", 15));
+            // TODO check for failed activation
+            this.announcer.startTipScheduler(tips, 20*60*this.getConfig().getInt("tipDelay", 15));
         }
     }
 

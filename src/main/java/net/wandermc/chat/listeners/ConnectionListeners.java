@@ -1,4 +1,3 @@
-
 /*
  *    WanderChat: a basic chat enhancements plugin for PaperMC servers.
  *
@@ -18,6 +17,7 @@
 package net.wandermc.chat.listeners;
 
 import net.wandermc.chat.config.PlayerManager;
+import net.wandermc.chat.chat.Announcer;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,13 +26,21 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class ConnectionListeners implements Listener {
     private PlayerManager playerManager;
-    public ConnectionListeners(PlayerManager playerManager) {
+    private Announcer announcer;
+    public ConnectionListeners(Announcer announcer, PlayerManager playerManager) {
         this.playerManager = playerManager;
+        this.announcer = announcer;
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         this.playerManager.loadYamlPlayer(event.getPlayer().getUniqueId());
+
+        // Restart TipScheduler if it was previously stopped (due to no players being online)
+        if (this.announcer.getTipScheduler().isCancelled()) {
+            announcer.log("Restarting tip schedule");
+            this.announcer.startTipScheduler();
+        }
     }
 
     @EventHandler
