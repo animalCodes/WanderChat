@@ -69,7 +69,7 @@ public class Announcer {
      *                consistency.
      */
     public void announce(Component prefix, Component message) {
-        // I know this looks dumb but otherwise `message`'s style will be overwritten
+        // I know this looks dumb but otherwise `message`'s style will be overwritten by the style of `prefix`.
         server.broadcast(Component.empty()
                 .append(prefix)
                 .append(message.style(defaultStyle)));
