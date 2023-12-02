@@ -44,7 +44,7 @@ public class ChatMessage {
     // Full url stored in "url" group, leading text is similarly stored in "leading"
     // group.
     private static final Pattern urlRegex = Pattern.compile(
-            "(?<leading>.*?)(?<url>(?:https?://)?(?:[\\w-]+\\.)+(?:[\\w-]+)(?:/?[\\w-.~!?$&'()*+,;=:@%]*/?)*(?:\\.\\w+)?(?:#[\\w-.~!?$&'()*+,;=:@%]*)?)");
+            "(?<leading>.*?)(?<url>(?:https?://)?(?:[\\w-]{2,}\\.)+(?:[\\w-]{2,})(?:/?[\\w-.]*)*(?:#\\w+)?(?:\\?\\w+=\\w+)?)");
 
     private TextComponent originalMessage;
     private TextComponent message;
